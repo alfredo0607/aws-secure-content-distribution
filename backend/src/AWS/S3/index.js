@@ -1,10 +1,5 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import {
-  AWS_BUCKET_NAME,
-  AWS_PRIVATE_KEY,
-  AWS_PUBLIC_KEY,
-  AWS_REGION,
-} from "../../../config.js";
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { AWS_BUCKET_NAME, AWS_PRIVATE_KEY, AWS_PUBLIC_KEY, AWS_REGION } from '../../../config.js';
 
 const clients = new S3Client({
   region: AWS_REGION,
@@ -15,17 +10,17 @@ const clients = new S3Client({
 });
 
 const extensionsInline = [
-  "image/gif",
-  "image/jpeg",
-  "image/png",
-  "image/svg+xml",
-  "application/pdf",
+  'image/gif',
+  'image/jpeg',
+  'image/png',
+  'image/svg+xml',
+  'application/pdf',
 ];
 
 export async function uploadFileS3(folder, NameFile, file) {
   try {
     if (!file || !file.data) {
-      throw new Error("File data is missing");
+      throw new Error('File data is missing');
     }
 
     const uploadParams = {
@@ -36,7 +31,7 @@ export async function uploadFileS3(folder, NameFile, file) {
     };
 
     if (extensionsInline.includes(file.mimetype)) {
-      uploadParams.ContentDisposition = "inline";
+      uploadParams.ContentDisposition = 'inline';
     }
 
     const command = new PutObjectCommand(uploadParams);
@@ -47,7 +42,7 @@ export async function uploadFileS3(folder, NameFile, file) {
       success: true,
     };
   } catch (error) {
-    console.error("Error uploading to S3:", {
+    console.error('Error uploading to S3:', {
       message: error.message,
       stack: error.stack,
     });

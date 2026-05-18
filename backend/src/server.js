@@ -1,20 +1,21 @@
-import "dotenv/config";
+/* eslint-disable require-await */
+import 'dotenv/config';
 
 // ─── App & Config ─────────────────────────────────────────────────────────
-import app from "./app.js";
+import app from './app.js';
 
-import config from "./config/app.js";
+import config from './config/app.js';
 const { env, port } = config;
 
 let server;
 
 // ─── Startup ──────────────────────────────────────────────────────────────
 async function start() {
-  console.info("\n══════════════════════════════════════════════");
-  console.info("  GPS Tracking Platform — API");
+  console.info('\n══════════════════════════════════════════════');
+  console.info('  Aws Secure Content Distribution — API');
   console.info(`  Environment : ${env}`);
   console.info(`  Node        : ${process.version}`);
-  console.info("══════════════════════════════════════════════\n");
+  console.info('══════════════════════════════════════════════\n');
 
   // 2. Start HTTP server
   server = app.listen(port, () => {
@@ -23,11 +24,11 @@ async function start() {
     console.info(`[SERVER]     Health     : http://localhost:${port}/health\n`);
   });
 
-  server.on("error", (err) => {
-    if (err.code === "EADDRINUSE") {
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
       console.error(`[SERVER] ❌  Port ${port} is already in use.`);
     } else {
-      console.error("[SERVER] ❌  Server error:", err.message);
+      console.error('[SERVER] ❌  Server error:', err.message);
     }
 
     process.exit(1);
@@ -35,21 +36,21 @@ async function start() {
 }
 
 // ─── Graceful shutdown ────────────────────────────────────────────────────
-async function shutdown(signal) {
+function shutdown(signal) {
   console.info(`\n[SERVER] ${signal} received — shutting down gracefully...`);
 
   if (server) {
-    server.close(async () => {
-      console.info("[SERVER] HTTP server closed.");
+    server.close(() => {
+      console.info('[SERVER] HTTP server closed.');
 
-      console.info("[SERVER] Goodbye 👋\n");
+      console.info('[SERVER] Goodbye 👋\n');
 
       process.exit(0);
     });
 
     // Force-kill after 10s if connections don't drain
     setTimeout(() => {
-      console.error("[SERVER] Forced shutdown after timeout.");
+      console.error('[SERVER] Forced shutdown after timeout.');
       process.exit(1);
     }, 10_000).unref();
   } else {
@@ -58,24 +59,24 @@ async function shutdown(signal) {
 }
 
 // ─── Process signal handlers ──────────────────────────────────────────────
-process.on("SIGTERM", () => shutdown("SIGTERM"));
-process.on("SIGINT", () => shutdown("SIGINT"));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
-process.on("uncaughtException", (err) => {
-  console.error("[FATAL] Uncaught exception:", err);
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught exception:', err);
 
-  shutdown("uncaughtException");
+  shutdown('uncaughtException');
 });
 
-process.on("unhandledRejection", (reason) => {
-  console.error("[FATAL] Unhandled promise rejection:", reason);
+process.on('unhandledRejection', (reason) => {
+  console.error('[FATAL] Unhandled promise rejection:', reason);
 
-  shutdown("unhandledRejection");
+  shutdown('unhandledRejection');
 });
 
 // ─── Boot ─────────────────────────────────────────────────────────────────
 start().catch((err) => {
-  console.error("[FATAL] Failed to start server:", err.message);
+  console.error('[FATAL] Failed to start server:', err.message);
 
   process.exit(1);
 });

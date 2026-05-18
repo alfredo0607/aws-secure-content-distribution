@@ -1,13 +1,13 @@
-import express from "express";
-import helmet from "helmet";
-import cors from "cors";
-import morgan from "morgan";
-import rateLimit from "express-rate-limit";
+import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import morgan from 'morgan';
+import rateLimit from 'express-rate-limit';
 
-import cfg from "./config/app.js";
-import indexRouter from "./routes/index.js";
+import cfg from './config/app.js';
+import indexRouter from './routes/index.js';
 
-import { errorHandler, notFoundHandler } from "./middlewares/errorHandler.js";
+import { errorHandler, notFoundHandler } from './middlewares/errorHandler.js';
 
 const app = express();
 
@@ -19,14 +19,14 @@ app.use(
   cors({
     origin: cfg.cors.origin,
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  }),
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
 );
 
 // ─── Body parsers ─────────────────────────────────────────────────────────
-app.use(express.json({ limit: "2mb" }));
-app.use(express.urlencoded({ extended: true, limit: "2mb" }));
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
 // ─── HTTP request logger ──────────────────────────────────────────────────
 if (!cfg.isProd) {
@@ -34,9 +34,9 @@ if (!cfg.isProd) {
 } else {
   // In production use a compact format and skip health probes
   app.use(
-    morgan("combined", {
-      skip: (req) => req.url === "/health",
-    }),
+    morgan('combined', {
+      skip: (req) => req.url === '/health',
+    })
   );
 }
 
@@ -49,8 +49,8 @@ const limiter = rateLimit({
   message: {
     success: false,
     error: {
-      code: "RATE_LIMIT_EXCEEDED",
-      message: "Too many requests. Please wait and try again.",
+      code: 'RATE_LIMIT_EXCEEDED',
+      message: 'Too many requests. Please wait and try again.',
     },
   },
 });
@@ -58,7 +58,7 @@ const limiter = rateLimit({
 app.use(cfg.prefix, limiter);
 
 // ─── Routes ───────────────────────────────────────────────────────────────
-app.use("/", indexRouter);
+app.use('/', indexRouter);
 app.use(cfg.prefix, indexRouter);
 
 // ─── 404 & error handlers (must be LAST) ─────────────────────────────────

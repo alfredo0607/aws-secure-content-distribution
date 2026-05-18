@@ -1,9 +1,6 @@
-import { getSignedUrl } from "@aws-sdk/cloudfront-signer";
-import fs from "fs";
-import {
-  CLOUDFRONT_KEYPAIR_ID,
-  CLOUDFRONT_PRIVATE_KEY,
-} from "../../../config.js";
+import { getSignedUrl } from '@aws-sdk/cloudfront-signer';
+import fs from 'fs';
+import { CLOUDFRONT_KEYPAIR_ID, CLOUDFRONT_PRIVATE_KEY } from '../../../config.js';
 
 async function firmarUrl(url) {
   try {
