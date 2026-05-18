@@ -36,6 +36,8 @@ Este proyecto implementa un sistema de **distribución de contenido privado** do
 
 ## Arquitectura
 
+![Diagrama de arquitectura AWS](architecture.svg)
+
 ```
 ┌──────────────┐        Signed URL         ┌─────────────────┐
 │   Frontend   │ ─────────────────────────▶│    Backend API   │
