@@ -22,6 +22,11 @@ variable "env" {
   type = string
 }
 
+#################################################
+# DATA SOURCES
+#################################################
+
+data "aws_caller_identity" "current" {}
 
 #################################################
 # KMS KEY
@@ -30,6 +35,43 @@ variable "env" {
 resource "aws_kms_key" "s3" {
   description         = "KMS key for S3 encryption"
   enable_key_rotation = true
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "EnableRootAccess"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action   = "kms:*"
+        Resource = "*"
+      },
+      {
+        Sid    = "AllowCloudFrontViaS3"
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        }
+        Action = [
+          "kms:Decrypt",
+          "kms:GenerateDataKey"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = aws_cloudfront_distribution.cdn.arn
+          }
+        }
+      }
+    ]
+  })
+}
+
+resource "aws_kms_alias" "s3" {
+  name          = "alias/s3-private-assets-${var.env}"
+  target_key_id = aws_kms_key.s3.key_id
 }
 
 #################################################
@@ -40,10 +82,6 @@ resource "aws_s3_bucket" "assets" {
   bucket = "my-private-assets-${var.env}-2026-demo"
 }
 
-#################################################
-# BLOCK PUBLIC ACCESS
-#################################################
-
 resource "aws_s3_bucket_public_access_block" "assets" {
   bucket = aws_s3_bucket.assets.id
 
@@ -53,10 +91,6 @@ resource "aws_s3_bucket_public_access_block" "assets" {
   restrict_public_buckets = true
 }
 
-#################################################
-# SERVER SIDE ENCRYPTION
-#################################################
-
 resource "aws_s3_bucket_server_side_encryption_configuration" "assets" {
   bucket = aws_s3_bucket.assets.id
 
@@ -65,13 +99,12 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "assets" {
       sse_algorithm     = "aws:kms"
       kms_master_key_id = aws_kms_key.s3.arn
     }
-
     bucket_key_enabled = true
   }
 }
 
 #################################################
-# CLOUDFRONT PUBLIC KEY
+# CLOUDFRONT PUBLIC KEY & KEY GROUP
 #################################################
 
 resource "aws_cloudfront_public_key" "main" {
@@ -79,10 +112,6 @@ resource "aws_cloudfront_public_key" "main" {
   comment     = "Public key for signed URLs"
   encoded_key = file("${path.module}/public_key.pem")
 }
-
-#################################################
-# KEY GROUP
-#################################################
 
 resource "aws_cloudfront_key_group" "signed_urls" {
   name  = "signed-url-key-group"
@@ -106,7 +135,6 @@ resource "aws_cloudfront_origin_access_control" "oac" {
 #################################################
 
 resource "aws_cloudfront_distribution" "cdn" {
-
   enabled             = true
   is_ipv6_enabled     = true
   default_root_object = "index.html"
@@ -122,23 +150,13 @@ resource "aws_cloudfront_distribution" "cdn" {
     target_origin_id       = "s3-private-assets"
     viewer_protocol_policy = "redirect-to-https"
 
-    allowed_methods = [
-      "GET",
-      "HEAD"
-    ]
+    allowed_methods = ["GET", "HEAD"]
+    cached_methods  = ["GET", "HEAD"]
 
-    cached_methods = [
-      "GET",
-      "HEAD"
-    ]
-
-    trusted_key_groups = [
-      aws_cloudfront_key_group.signed_urls.id
-    ]
+    trusted_key_groups = [aws_cloudfront_key_group.signed_urls.id]
 
     forwarded_values {
       query_string = false
-
       cookies {
         forward = "none"
       }
@@ -165,33 +183,23 @@ resource "aws_cloudfront_distribution" "cdn" {
 #################################################
 
 resource "aws_s3_bucket_policy" "assets" {
-
   depends_on = [
-    aws_cloudfront_distribution.cdn
+    aws_s3_bucket_public_access_block.assets # ← corregido
   ]
 
   bucket = aws_s3_bucket.assets.id
 
   policy = jsonencode({
     Version = "2012-10-17"
-
     Statement = [
       {
         Sid    = "AllowCloudFrontAccess"
         Effect = "Allow"
-
         Principal = {
           Service = "cloudfront.amazonaws.com"
         }
-
-        Action = [
-          "s3:GetObject"
-        ]
-
-        Resource = [
-          "${aws_s3_bucket.assets.arn}/*"
-        ]
-
+        Action   = ["s3:GetObject"]
+        Resource = ["${aws_s3_bucket.assets.arn}/*"]
         Condition = {
           StringEquals = {
             "AWS:SourceArn" = aws_cloudfront_distribution.cdn.arn

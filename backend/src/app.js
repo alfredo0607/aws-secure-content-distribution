@@ -1,4 +1,5 @@
 import express from 'express';
+import fileUpload from 'express-fileupload';
 import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -6,6 +7,7 @@ import rateLimit from 'express-rate-limit';
 
 import cfg from './config/app.js';
 import indexRouter from './routes/index.js';
+import filesRouter from './routes/files.router.js';
 
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler.js';
 
@@ -27,6 +29,9 @@ app.use(
 // ─── Body parsers ─────────────────────────────────────────────────────────
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+
+// ─── File upload ──────────────────────────────────────────────────────────
+app.use(fileUpload({ limits: { fileSize: 10 * 1024 * 1024 }, abortOnLimit: true }));
 
 // ─── HTTP request logger ──────────────────────────────────────────────────
 if (!cfg.isProd) {
@@ -60,6 +65,7 @@ app.use(cfg.prefix, limiter);
 // ─── Routes ───────────────────────────────────────────────────────────────
 app.use('/', indexRouter);
 app.use(cfg.prefix, indexRouter);
+app.use(`${cfg.prefix}/files`, filesRouter);
 
 // ─── 404 & error handlers (must be LAST) ─────────────────────────────────
 app.use(notFoundHandler);
