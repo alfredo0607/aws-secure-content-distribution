@@ -36,7 +36,7 @@ Este proyecto implementa un sistema de **distribución de contenido privado** do
 
 ## Arquitectura
 
-![Diagrama de arquitectura AWS](architecture.jpg)
+![Diagrama de arquitectura AWS](architecture.drawio.png)
 
 ```
 ┌──────────────┐        Signed URL         ┌─────────────────┐
