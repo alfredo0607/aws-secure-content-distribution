@@ -334,10 +334,8 @@ Ver documento completo: [docs/decisions/ADR-001-cloudfront-oac-vs-oai.md](docs/d
 | Backend — módulo S3 (upload) | ✅ Completo |
 | Backend — módulo CloudFront (Signed URLs) | ✅ Completo |
 | Backend — helpers (compresión de imágenes, IDs) | ✅ Completo |
-| Backend — endpoints de upload y signed URL | 🔲 En desarrollo |
-| Backend — autenticación JWT | 🔲 En desarrollo |
-| Frontend | 🔲 En desarrollo |
-| Tests automatizados | 🔲 Pendiente |
+| Backend — endpoints de upload y signed URL | ✅ Completo |
+| Frontend | ✅ Completo |
 
 ---
 
