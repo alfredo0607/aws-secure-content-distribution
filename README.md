@@ -36,7 +36,7 @@ Este proyecto implementa un sistema de **distribución de contenido privado** do
 
 ## Arquitectura
 
-![Diagrama de arquitectura AWS](architecture.svg)
+![Diagrama de arquitectura AWS](architecture.png)
 
 ```
 ┌──────────────┐        Signed URL         ┌─────────────────┐
@@ -54,6 +54,7 @@ Este proyecto implementa un sistema de **distribución de contenido privado** do
 ```
 
 **Flujo de acceso:**
+
 1. El usuario solicita acceso a un archivo al backend.
 2. El backend genera una Signed URL de CloudFront con expiración (24h por defecto).
 3. El usuario accede al contenido directamente a través de CloudFront con esa URL.
@@ -64,20 +65,20 @@ Este proyecto implementa un sistema de **distribución de contenido privado** do
 
 ## Stack tecnológico
 
-| Capa | Tecnología | Versión |
-|------|-----------|---------|
-| **Runtime** | Node.js | >= 20 |
-| **Framework** | Express | 5.2.1 |
-| **Módulos** | ES Modules (ESM) | — |
-| **Package manager** | pnpm | 11.1.2 |
-| **AWS SDK** | @aws-sdk v3 | 3.1048.0 |
-| **CDN** | Amazon CloudFront + OAC | — |
-| **Storage** | Amazon S3 (privado, SSE-KMS) | — |
-| **Cifrado** | AWS KMS | — |
-| **IaC** | Terraform | >= 1.4.0 |
-| **Compresión imágenes** | sharp | 0.34.5 |
-| **IDs únicos** | nanoid | 5.1.11 |
-| **Linting / Formato** | ESLint 10 + Prettier 3 | — |
+| Capa                    | Tecnología                   | Versión  |
+| ----------------------- | ---------------------------- | -------- |
+| **Runtime**             | Node.js                      | >= 20    |
+| **Framework**           | Express                      | 5.2.1    |
+| **Módulos**             | ES Modules (ESM)             | —        |
+| **Package manager**     | pnpm                         | 11.1.2   |
+| **AWS SDK**             | @aws-sdk v3                  | 3.1048.0 |
+| **CDN**                 | Amazon CloudFront + OAC      | —        |
+| **Storage**             | Amazon S3 (privado, SSE-KMS) | —        |
+| **Cifrado**             | AWS KMS                      | —        |
+| **IaC**                 | Terraform                    | >= 1.4.0 |
+| **Compresión imágenes** | sharp                        | 0.34.5   |
+| **IDs únicos**          | nanoid                       | 5.1.11   |
+| **Linting / Formato**   | ESLint 10 + Prettier 3       | —        |
 
 ---
 
@@ -205,15 +206,15 @@ El servidor levanta en `http://localhost:3000` por defecto.
 
 ### Scripts disponibles
 
-| Comando | Descripción |
-|---------|------------|
-| `pnpm dev` | Servidor con nodemon (hot reload) |
-| `pnpm start` | Servidor en producción |
-| `pnpm prod` | Producción con NODE_ENV=production |
-| `pnpm lint` | Verifica reglas ESLint |
+| Comando         | Descripción                            |
+| --------------- | -------------------------------------- |
+| `pnpm dev`      | Servidor con nodemon (hot reload)      |
+| `pnpm start`    | Servidor en producción                 |
+| `pnpm prod`     | Producción con NODE_ENV=production     |
+| `pnpm lint`     | Verifica reglas ESLint                 |
 | `pnpm lint:fix` | Corrige errores ESLint automáticamente |
-| `pnpm format` | Formatea código con Prettier |
-| `pnpm test` | Ejecuta tests con Node test runner |
+| `pnpm format`   | Formatea código con Prettier           |
+| `pnpm test`     | Ejecuta tests con Node test runner     |
 
 ---
 
@@ -228,6 +229,7 @@ GET /health
 ```
 
 Respuesta:
+
 ```json
 {
   "status": "ok",
@@ -245,6 +247,7 @@ GET /
 ```
 
 Respuesta:
+
 ```json
 {
   "name": "aws-secure-content-distribution-backend",
@@ -263,15 +266,15 @@ La infraestructura se gestiona con Terraform desde la carpeta `infrastructure/`.
 
 ### Recursos creados
 
-| Recurso | Descripción |
-|---------|------------|
-| `aws_s3_bucket` | Bucket privado con BlockPublicAccess |
-| `aws_kms_key` | Clave de cifrado con rotación automática |
-| `aws_cloudfront_distribution` | Distribución CDN con Signed URLs |
-| `aws_cloudfront_origin_access_control` | OAC con firma SigV4 |
-| `aws_cloudfront_public_key` | Clave pública para validar Signed URLs |
-| `aws_cloudfront_key_group` | Grupo de claves para Trusted Key Groups |
-| `aws_s3_bucket_policy` | Política: solo CloudFront puede leer |
+| Recurso                                | Descripción                              |
+| -------------------------------------- | ---------------------------------------- |
+| `aws_s3_bucket`                        | Bucket privado con BlockPublicAccess     |
+| `aws_kms_key`                          | Clave de cifrado con rotación automática |
+| `aws_cloudfront_distribution`          | Distribución CDN con Signed URLs         |
+| `aws_cloudfront_origin_access_control` | OAC con firma SigV4                      |
+| `aws_cloudfront_public_key`            | Clave pública para validar Signed URLs   |
+| `aws_cloudfront_key_group`             | Grupo de claves para Trusted Key Groups  |
+| `aws_s3_bucket_policy`                 | Política: solo CloudFront puede leer     |
 
 ### Comandos Terraform
 
@@ -299,13 +302,13 @@ env = "dev"    # Prefijo del entorno (dev, staging, prod)
 
 ### Configuración de CloudFront
 
-| Parámetro | Valor |
-|-----------|-------|
-| Price Class | PriceClass_100 (EE.UU. + Europa) |
-| TTL por defecto | 86 400 s (1 día) |
-| TTL máximo | 604 800 s (7 días) |
-| Métodos permitidos | GET, HEAD |
-| HTTPS | Solo HTTPS (redirect-to-https) |
+| Parámetro          | Valor                            |
+| ------------------ | -------------------------------- |
+| Price Class        | PriceClass_100 (EE.UU. + Europa) |
+| TTL por defecto    | 86 400 s (1 día)                 |
+| TTL máximo         | 604 800 s (7 días)               |
+| Métodos permitidos | GET, HEAD                        |
+| HTTPS              | Solo HTTPS (redirect-to-https)   |
 
 ---
 
@@ -315,12 +318,12 @@ env = "dev"    # Prefijo del entorno (dev, staging, prod)
 
 **Decisión:** usar **Origin Access Control (OAC)** en lugar de Origin Access Identity (OAI, legacy).
 
-| Criterio | OAI (legacy) | OAC (elegido) |
-|----------|-------------|--------------|
-| SSE-KMS en S3 | No soportado | ✅ Soportado |
-| Firma de solicitudes | No | ✅ SigV4 |
-| Nuevas regiones AWS | Limitado | ✅ Todas |
-| Recomendación AWS | Deprecado | ✅ Actual (2022+) |
+| Criterio             | OAI (legacy) | OAC (elegido)     |
+| -------------------- | ------------ | ----------------- |
+| SSE-KMS en S3        | No soportado | ✅ Soportado      |
+| Firma de solicitudes | No           | ✅ SigV4          |
+| Nuevas regiones AWS  | Limitado     | ✅ Todas          |
+| Recomendación AWS    | Deprecado    | ✅ Actual (2022+) |
 
 Ver documento completo: [docs/decisions/ADR-001-cloudfront-oac-vs-oai.md](docs/decisions/ADR-001-cloudfront-oac-vs-oai.md)
 
@@ -328,16 +331,16 @@ Ver documento completo: [docs/decisions/ADR-001-cloudfront-oac-vs-oai.md](docs/d
 
 ## Estado del proyecto
 
-| Componente | Estado |
-|-----------|--------|
+| Componente                                        | Estado      |
+| ------------------------------------------------- | ----------- |
 | Infraestructura AWS (S3 + CloudFront + KMS + OAC) | ✅ Completo |
-| Terraform IaC | ✅ Completo |
-| Backend — setup Express, middlewares, config | ✅ Completo |
-| Backend — módulo S3 (upload) | ✅ Completo |
-| Backend — módulo CloudFront (Signed URLs) | ✅ Completo |
-| Backend — helpers (compresión de imágenes, IDs) | ✅ Completo |
-| Backend — endpoints de upload y signed URL | ✅ Completo |
-| Frontend | ✅ Completo |
+| Terraform IaC                                     | ✅ Completo |
+| Backend — setup Express, middlewares, config      | ✅ Completo |
+| Backend — módulo S3 (upload)                      | ✅ Completo |
+| Backend — módulo CloudFront (Signed URLs)         | ✅ Completo |
+| Backend — helpers (compresión de imágenes, IDs)   | ✅ Completo |
+| Backend — endpoints de upload y signed URL        | ✅ Completo |
+| Frontend                                          | ✅ Completo |
 
 ---
 
