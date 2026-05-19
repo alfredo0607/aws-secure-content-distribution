@@ -1,0 +1,91 @@
+# =====================================================
+# DESPLIEGUE — Backend Escalable (Arquitectura 02)
+# =====================================================
+# Prerrequisito: AWS CLI con perfil "leader-developer-personal"
+# Prerrequisito: Docker Desktop corriendo
+# Prerrequisito: Arquitectura 01 (CDN) ya desplegada
+
+
+# ── FASE 1: Crear el repositorio ECR ──────────────────────────────────────
+
+cd infrastructure/02-scalable-backend
+
+terraform init
+
+# Solo crea el ECR (necesitamos la URL antes de hacer el push)
+terraform apply -target=aws_ecr_repository.backend -var="app_image=placeholder" -var="jwt_secret=placeholder" -var="jwt_refresh_secret=placeholder" -var="cloudfront_private_key=placeholder"
+
+# Anotar la URL del repositorio
+terraform output ecr_repository_url
+# Ejemplo: 578209355877.dkr.ecr.us-east-1.amazonaws.com/backend-dev
+
+
+# ── FASE 2: Build y push de la imagen Docker ──────────────────────────────
+
+cd ../../backend
+
+# Login en ECR
+aws ecr get-login-password --region us-east-1 --profile leader-developer-personal | docker login --username AWS --password-stdin 123456789012.dkr.ecr.us-east-1.amazonaws.com
+
+# Build (especificando la plataforma de ECS Fargate)
+docker build --platform linux/amd64 -t backend-dev .
+
+# Tag y push
+docker tag backend-dev:latest 578209355877.dkr.ecr.us-east-1.amazonaws.com/backend-dev:latest
+docker push 578209355877.dkr.ecr.us-east-1.amazonaws.com/backend-dev:latest
+
+
+# ── FASE 3: Exportar secretos y desplegar todo ────────────────────────────
+
+cd ../infrastructure/02-scalable-backend
+
+
+# Exportar secretos como variables de entorno (nunca hardcodear en tfvars)
+export TF_VAR_jwt_secret="tu-jwt-secret-aqui-minimo-64-caracteres"
+export TF_VAR_jwt_refresh_secret="tu-refresh-secret-aqui"
+export TF_VAR_cloudfront_private_key="$(cat ../../backend/src/AWS/cloudfront/key/privkey.pem)"
+
+# Actualizar app_image en terraform.tfvars con la URL real de ECR
+# app_image = "578209355877.dkr.ecr.us-east-1.amazonaws.com/backend-dev:latest"
+
+terraform apply
+
+# Ver outputs
+terraform output
+
+
+# ── FASE 4: Verificar ─────────────────────────────────────────────────────
+
+# Health check
+curl http://$(terraform output -raw api_endpoint | sed 's|http://||')/health
+
+# Endpoint principal
+curl http://$(terraform output -raw api_endpoint | sed 's|http://||')/api/v1
+
+# Logs en tiempo real
+aws logs tail /ecs/backend-dev --follow --profile leader-developer-personal --region us-east-1
+
+
+# ── DEPLOY DE NUEVA VERSIÓN (rolling, sin downtime) ───────────────────────
+
+cd ../../backend
+
+docker build --platform linux/amd64 -t backend-dev .
+docker tag backend-dev:latest 578209355877.dkr.ecr.us-east-1.amazonaws.com/backend-dev:latest
+docker push 578209355877.dkr.ecr.us-east-1.amazonaws.com/backend-dev:latest
+
+aws ecs update-service --cluster cluster-backend-dev --service backend-service-dev --force-new-deployment --profile leader-developer-personal --region us-east-1
+
+# Monitorear el rolling deployment
+aws ecs wait services-stable --cluster cluster-backend-dev --services backend-service-dev --profile leader-developer-personal --region us-east-1
+
+
+# ── DESTRUIR ──────────────────────────────────────────────────────────────
+
+cd infrastructure/02-scalable-backend
+
+export TF_VAR_jwt_secret="x"
+export TF_VAR_jwt_refresh_secret="x"
+export TF_VAR_cloudfront_private_key="x"
+
+terraform destroy

@@ -4,15 +4,11 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
-import { AWS_BUCKET_NAME, AWS_PRIVATE_KEY, AWS_PUBLIC_KEY, AWS_REGION } from '../../../config.js';
+import { AWS_BUCKET_NAME, AWS_REGION } from '../../../config.js';
 
-const clients = new S3Client({
-  region: AWS_REGION,
-  credentials: {
-    accessKeyId: AWS_PUBLIC_KEY,
-    secretAccessKey: AWS_PRIVATE_KEY,
-  },
-});
+// En ECS Fargate las credenciales vienen del IAM Task Role automáticamente.
+// En local, el SDK usa el perfil de ~/.aws/credentials.
+const clients = new S3Client({ region: AWS_REGION });
 
 const extensionsInline = [
   'image/gif',
