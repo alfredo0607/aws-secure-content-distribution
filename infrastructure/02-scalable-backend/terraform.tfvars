@@ -14,6 +14,9 @@ cors_origin = "http://localhost:4322"
 cloudfront_keypair_id = "K1QOB35VVE3M52"
 
 # Secretos — pasar por variable de entorno o archivo .tfvars local (nunca commitear)
-jwt_secret             = "c1da77bb-9755-4d8c-80b1-611b3a31bec1"
-jwt_refresh_secret     = "c1da77bb-9755-4d8c-80b1-611b3a31bec1"
-cloudfront_private_key = "$(cat ../../backend/src/AWS/cloudfront/key/privkey.pem)"
+jwt_secret         = "c1da77bb-9755-4d8c-80b1-611b3a31bec1"
+jwt_refresh_secret = "c1da77bb-9755-4d8c-80b1-611b3a31bec1"
+
+
+
+

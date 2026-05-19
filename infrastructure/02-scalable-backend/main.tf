@@ -302,19 +302,28 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_managed" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+
 resource "aws_iam_role_policy" "ecs_execution_secrets" {
   name = "ecs-secrets-access-${var.env}"
   role = aws_iam_role.ecs_execution.id
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = ["secretsmanager:GetSecretValue"]
-      Resource = aws_secretsmanager_secret.app.arn
-    }]
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["secretsmanager:GetSecretValue"]
+        Resource = aws_secretsmanager_secret.app.arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["kms:GenerateDataKey", "kms:Decrypt", "kms:DescribeKey"]
+        Resource = "arn:aws:kms:us-east-1:578209355877:key/da2f5da6-2e70-40a0-88f1-e49baf700989"
+      }
+    ]
   })
 }
+
 
 #################################################
 # IAM — Task Role (permisos de la app: S3 + CloudFront)
@@ -341,18 +350,19 @@ resource "aws_iam_role_policy" "ecs_task_s3" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = [
-          "s3:PutObject",
-          "s3:GetObject",
-          "s3:DeleteObject",
-        ]
+        Effect   = "Allow"
+        Action   = ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"]
         Resource = "${data.aws_s3_bucket.assets.arn}/*"
       },
       {
         Effect   = "Allow"
         Action   = ["s3:ListBucket"]
         Resource = data.aws_s3_bucket.assets.arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["kms:GenerateDataKey", "kms:Decrypt", "kms:DescribeKey"]
+        Resource = "arn:aws:kms:us-east-1:578209355877:key/da2f5da6-2e70-40a0-88f1-e49baf700989"
       }
     ]
   })
