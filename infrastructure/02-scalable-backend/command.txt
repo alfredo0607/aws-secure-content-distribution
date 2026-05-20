@@ -89,3 +89,13 @@ export TF_VAR_jwt_refresh_secret="x"
 export TF_VAR_cloudfront_private_key="x"
 
 terraform destroy
+
+
+Lo más fácil — escalar ECS a 0 (sin destruir nada)
+
+aws ecs update-service --cluster cluster-backend-dev --service backend-service-dev --desired-count 0 --profile leader-developer-personal --region us-east-1
+
+
+Para retomar:
+
+aws ecs update-service --cluster cluster-backend-dev --service backend-service-dev --desired-count 2 --profile leader-developer-personal --region us-east-1
