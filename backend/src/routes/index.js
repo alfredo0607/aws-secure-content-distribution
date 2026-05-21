@@ -14,7 +14,7 @@ const router = Router();
 router.get('/health', (_req, res) => {
   try {
     return res.status(200).json({
-      message: 'All systems operational, Health check passed.',
+      message: `All systems operational, Health check passed ${env}.`,
       data: {
         status: 'ok',
         env,
@@ -40,6 +40,7 @@ router.get('/', (_req, res) => {
     message: 'Aws Secure Content Distribution API',
     data: {
       version: '1.0.0',
+      env,
       prefix,
       docs: `${prefix}/docs`,
       health: '/health',
