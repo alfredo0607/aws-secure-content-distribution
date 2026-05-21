@@ -99,13 +99,15 @@ if [ -f "$ENV_FILE" ]; then
     --restart         unless-stopped \
     -p                3000:3000 \
     --env-file        "$ENV_FILE" \
+    -v /home/ec2-user/key:/home/ec2-user/key:ro \
     "$IMAGE"
 else
   echo "[deploy] ADVERTENCIA: $ENV_FILE no existe; el contenedor arranca sin vars de entorno."
   docker run -d \
-    --name    "$CONTAINER" \
-    --restart unless-stopped \
-    -p        3000:3000 \
+    --name            "$CONTAINER" \
+    --restart         unless-stopped \
+    -p                3000:3000 \
+    -v /home/ec2-user/key:/home/ec2-user/key:ro \
     "$IMAGE"
 fi
 

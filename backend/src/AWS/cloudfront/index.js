@@ -4,7 +4,7 @@ import { CLOUDFRONT_KEYPAIR_ID, CLOUDFRONT_PRIVATE_KEY } from '../../../config.j
 
 function resolvePrivateKey(value) {
   if (!value) {
-    throw new Error('CLOUDFRONT_PRIVATE_KEY no está configurada.');
+    throw new Error('CLOUDFRONT_PRIVATE_KEY no está configurada');
   }
 
   const raw =
