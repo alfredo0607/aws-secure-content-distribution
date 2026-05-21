@@ -1,0 +1,91 @@
+name: CI/CD — Build & Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  # ghcr.io/<owner>/<repo>/backend  →  p.ej. ghcr.io/alfredodm/aws-secure-content-distribution/backend
+  IMAGE_NAME: ${{ github.repository }}/backend
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 1: construir la imagen y subirla a GitHub Container Registry
+  # ─────────────────────────────────────────────────────────────────────────────
+  build-and-push:
+    name: Build & push to GHCR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # tag inmutable por SHA completo: sha-abc123...
+            type=sha,format=long
+            # tag 'latest' solo en la rama main
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Cache de capas entre ejecuciones (GitHub Actions Cache)
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # JOB 2: desplegar en la instancia EC2 vía SSH
+  # ─────────────────────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to EC2
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read  # GITHUB_TOKEN necesita leer paquetes desde EC2
+
+    steps:
+      - name: SSH deploy
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          # Credenciales GHCR inyectadas en la sesión SSH remota
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Imagen exacta que se acaba de publicar (SHA inmutable)
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+        with:
+          host: ${{ secrets.EC2_HOST }}      # IP elástica del output de Terraform
+          username: ${{ secrets.EC2_USER }}  # ec2-user  (Amazon Linux 2023)
+          key: ${{ secrets.EC2_SSH_KEY }}    # Clave privada SSH (PEM completo)
+          envs: GHCR_USER,GHCR_TOKEN,IMAGE
+          script: |
+            # Autenticarse en GHCR y desplegar el contenedor
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+            ~/deploy.sh "$IMAGE"
