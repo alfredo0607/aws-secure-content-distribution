@@ -47,11 +47,12 @@ http {
 }
 NGINX_MAIN
 
-# Virtual host: reverse proxy al contenedor Node.js en el puerto ${app_port}
+# Terraform reemplaza ${domain} y ${app_port} antes de que bash ejecute este script.
+# El heredoc con comillas simples evita que bash expanda $http_upgrade, $host, etc.
 cat > /etc/nginx/conf.d/backend.conf << 'NGINX_VHOST'
 server {
-    listen 80 default_server;
-    server_name _;
+    listen 80;
+    server_name ${domain};
 
     location / {
         proxy_pass          http://localhost:${app_port};
@@ -70,6 +71,11 @@ NGINX_VHOST
 
 systemctl start nginx
 systemctl enable nginx
+
+# ── Certbot (Let's Encrypt) ───────────────────────────────────────────────────
+# Instala certbot. El certificado se solicita manualmente después de
+# apuntar el DNS: sudo certbot --nginx -d ${domain}
+dnf install -y python3-certbot-nginx
 
 # ── Script de deploy (reutilizado por el pipeline CI/CD) ─────────────────────
 cat > /home/ec2-user/deploy.sh << 'DEPLOY_SCRIPT'

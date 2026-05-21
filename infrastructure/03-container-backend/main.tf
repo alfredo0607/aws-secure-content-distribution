@@ -43,6 +43,11 @@ variable "app_port" {
   default     = 3000
 }
 
+variable "domain" {
+  type        = string
+  description = "Subdominio completo para la API (p.ej. content-distribution.alfredo-dominguez.dev)"
+}
+
 #################################################
 # DATA SOURCES
 #################################################
@@ -129,9 +134,17 @@ resource "aws_security_group" "ec2_sg" {
   }
 
   ingress {
-    description = "HTTP desde internet"
+    description = "HTTP (y validacion ACME de Lets Encrypt)"
     from_port   = 80
     to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "HTTPS"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -189,6 +202,7 @@ resource "aws_instance" "backend" {
   # templatefile sustituye ${app_port}; las variables $nginx_var pasan sin cambios
   user_data = templatefile("${path.module}/user_data.sh", {
     app_port = var.app_port
+    domain   = var.domain
   })
 
   # Recrear instancia si cambia el script de arranque

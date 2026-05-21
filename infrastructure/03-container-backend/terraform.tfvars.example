@@ -1,7 +1,8 @@
 # Copia este archivo como terraform.tfvars y completa los valores reales.
 # No subas terraform.tfvars al repositorio (está en .gitignore).
 
-env = "dev"
+env    = "dev"
+domain = "content-distribution.alfredo-dominguez.dev"
 
 # Restringe el acceso SSH a tu IP pública para mayor seguridad:
 #   curl ifconfig.me   → obtienes tu IP actual
