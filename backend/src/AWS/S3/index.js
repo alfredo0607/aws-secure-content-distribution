@@ -6,8 +6,6 @@ import {
 } from '@aws-sdk/client-s3';
 import { AWS_BUCKET_NAME, AWS_PRIVATE_KEY, AWS_PUBLIC_KEY, AWS_REGION } from '../../../config.js';
 
-// En ECS Fargate las credenciales vienen del IAM Task Role automáticamente.
-// En local, el SDK usa el perfil de ~/.aws/credentials.
 const clients = new S3Client({
   region: AWS_REGION,
   credentials: {
