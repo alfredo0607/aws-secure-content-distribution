@@ -91,4 +91,4 @@ jobs:
           script: |
             # Autenticarse en GHCR y desplegar el contenedor
             echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
-            ~/deploy.sh "$IMAGE"
+            ~/deploy.sh "$IMAGE" "backend-content-distribution-file"
