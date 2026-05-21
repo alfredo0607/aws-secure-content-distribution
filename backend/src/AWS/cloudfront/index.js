@@ -9,6 +9,8 @@ function resolvePrivateKey(value) {
   return value.startsWith('/') || value.startsWith('.') ? fs.readFileSync(value) : value;
 }
 
+console.info(CLOUDFRONT_PRIVATE_KEY);
+
 async function firmarUrl(url, expiresInSeconds = 86400) {
   const signedUrl = await getSignedUrl({
     url,
