@@ -85,7 +85,7 @@ cat > /home/ec2-user/deploy.sh << 'DEPLOY_SCRIPT'
 set -euo pipefail
 
 IMAGE="$${1:?Error: indica la imagen. Uso: ./deploy.sh <imagen>}"
-CONTAINER="backend"
+CONTAINER="${2:?Error: indica el nombre del contenedor}"
 ENV_FILE="/home/ec2-user/.env"
 
 echo "[deploy] Deteniendo contenedor anterior..."
