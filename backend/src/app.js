@@ -13,6 +13,8 @@ import { errorHandler, notFoundHandler } from './middlewares/errorHandler.js';
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 // ─── Security headers ─────────────────────────────────────────────────────
 app.use(helmet());
 
