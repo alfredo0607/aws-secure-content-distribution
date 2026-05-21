@@ -6,10 +6,13 @@ function resolvePrivateKey(value) {
   if (!value) {
     throw new Error('CLOUDFRONT_PRIVATE_KEY no está configurada');
   }
-  return value.startsWith('/') || value.startsWith('.') ? fs.readFileSync(value, 'utf8') : value;
-}
 
-console.info(CLOUDFRONT_PRIVATE_KEY);
+  const raw =
+    value.startsWith('/') || value.startsWith('.') ? fs.readFileSync(value, 'utf8') : value;
+
+  // En .env los saltos de línea suelen llegar como \n literales — los normalizamos
+  return raw.includes('\\n') ? raw.replace(/\\n/g, '\n') : raw;
+}
 
 async function firmarUrl(url, expiresInSeconds = 86400) {
   const signedUrl = await getSignedUrl({
