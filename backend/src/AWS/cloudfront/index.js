@@ -6,7 +6,7 @@ function resolvePrivateKey(value) {
   if (!value) {
     throw new Error('CLOUDFRONT_PRIVATE_KEY no está configurada');
   }
-  return value.startsWith('/') || value.startsWith('.') ? fs.readFileSync(value) : value;
+  return value.startsWith('/') || value.startsWith('.') ? fs.readFileSync(value, 'utf8') : value;
 }
 
 console.info(CLOUDFRONT_PRIVATE_KEY);
