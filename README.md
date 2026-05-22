@@ -43,19 +43,6 @@ Este proyecto implementa un sistema de **distribución de contenido privado** do
 ![Diagrama de arquitectura AWS](/infrastructure//03-container-backend/architecture-container-backend.png)
 
 ```
-┌──────────────┐        Signed URL         ┌─────────────────┐
-│   Frontend   │ ─────────────────────────▶│    Backend API   │
-│  (Browser)   │ ◀──── URL firmada (exp) ──│  (Node/Express)  │
-└──────────────┘                           └────────┬────────┘
-        │                                           │ s3:PutObject
-        │ GET /asset?Policy=...&Signature=...       ▼
-        │                                  ┌─────────────────┐
-        ▼                                  │   Amazon S3      │
-┌──────────────────┐  OAC (SigV4)         │  (Bucket privado)│
-│   CloudFront CDN │ ────────────────────▶│  SSE-KMS         │
-│  (Key Group)     │                      │  BlockPublicAccess│
-└──────────────────┘                      └─────────────────┘
-```
 
 **Flujo de acceso:**
 
@@ -89,42 +76,44 @@ Este proyecto implementa un sistema de **distribución de contenido privado** do
 ## Estructura del proyecto
 
 ```
+
 aws-secure-content-distribution/
-├── backend/                        # API Node.js + Express
-│   ├── src/
-│   │   ├── AWS/
-│   │   │   ├── S3/
-│   │   │   │   └── index.js        # Upload a S3 (AWS SDK v3)
-│   │   │   └── cloudfront/
-│   │   │       ├── index.js        # Firma de Signed URLs
-│   │   │       └── key/
-│   │   │           ├── privkey.pem # Clave privada CloudFront
-│   │   │           └── pubkey.pem  # Clave pública CloudFront
-│   │   ├── config/
-│   │   │   └── app.js              # Configuración centralizada
-│   │   ├── helpers/
-│   │   │   ├── uploadFile.helper.js    # Compresión + upload
-│   │   │   └── codeGenerator.helper.js # Generación de códigos/IDs
-│   │   ├── middlewares/
-│   │   │   └── errorHandler.js     # Error handling global
-│   │   ├── routes/
-│   │   │   └── index.js            # Rutas de la API
-│   │   ├── app.js                  # Setup Express (middleware, cors, etc.)
-│   │   └── server.js               # Entry point + graceful shutdown
-│   ├── .env.example                # Template de variables de entorno
-│   ├── eslint.config.js
-│   ├── .prettierrc
-│   └── package.json
-├── frontend/                       # Frontend (en desarrollo)
-├── infrastructure/                 # Terraform IaC
-│   ├── main.tf                     # Recursos AWS (S3, CloudFront, KMS)
-│   ├── terraform.tfvars            # Variables del entorno
-│   └── command.txt                 # Referencia de comandos Terraform
+├── backend/ # API Node.js + Express
+│ ├── src/
+│ │ ├── AWS/
+│ │ │ ├── S3/
+│ │ │ │ └── index.js # Upload a S3 (AWS SDK v3)
+│ │ │ └── cloudfront/
+│ │ │ ├── index.js # Firma de Signed URLs
+│ │ │ └── key/
+│ │ │ ├── privkey.pem # Clave privada CloudFront
+│ │ │ └── pubkey.pem # Clave pública CloudFront
+│ │ ├── config/
+│ │ │ └── app.js # Configuración centralizada
+│ │ ├── helpers/
+│ │ │ ├── uploadFile.helper.js # Compresión + upload
+│ │ │ └── codeGenerator.helper.js # Generación de códigos/IDs
+│ │ ├── middlewares/
+│ │ │ └── errorHandler.js # Error handling global
+│ │ ├── routes/
+│ │ │ └── index.js # Rutas de la API
+│ │ ├── app.js # Setup Express (middleware, cors, etc.)
+│ │ └── server.js # Entry point + graceful shutdown
+│ ├── .env.example # Template de variables de entorno
+│ ├── eslint.config.js
+│ ├── .prettierrc
+│ └── package.json
+├── frontend/ # Frontend (en desarrollo)
+├── infrastructure/ # Terraform IaC
+│ ├── main.tf # Recursos AWS (S3, CloudFront, KMS)
+│ ├── terraform.tfvars # Variables del entorno
+│ └── command.txt # Referencia de comandos Terraform
 ├── docs/
-│   └── decisions/
-│       └── ADR-001-cloudfront-oac-vs-oai.md
+│ └── decisions/
+│ └── ADR-001-cloudfront-oac-vs-oai.md
 └── README.md
-```
+
+````
 
 ---
 
@@ -144,7 +133,7 @@ Copia el archivo de ejemplo y completa los valores:
 
 ```bash
 cp backend/.env.example backend/.env
-```
+````
 
 ### Variables requeridas
 
