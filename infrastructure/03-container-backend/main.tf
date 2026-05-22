@@ -200,10 +200,7 @@ resource "aws_instance" "backend" {
   subnet_id              = aws_subnet.public.id
 
   # templatefile sustituye ${app_port}; las variables $nginx_var pasan sin cambios
-  user_data = templatefile("${path.module}/user_data.sh", {
-    app_port = var.app_port
-    domain   = var.domain
-  })
+  user_data = templatefile("${path.module}/user_data.sh", {})
 
   # Recrear instancia si cambia el script de arranque
   user_data_replace_on_change = true
