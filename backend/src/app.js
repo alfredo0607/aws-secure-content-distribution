@@ -16,15 +16,15 @@ const app = express();
 app.set('trust proxy', 1);
 
 // ─── Security headers ─────────────────────────────────────────────────────
-// app.use(helmet());
+app.use(helmet());
 
 // ─── CORS ─────────────────────────────────────────────────────────────────
 app.use(
   cors({
-    origin: '*',
-    // credentials: true,
-    // methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    // allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: cfg.cors.origin || '*',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 
@@ -33,7 +33,13 @@ app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
 // ─── File upload ──────────────────────────────────────────────────────────
-app.use(fileUpload({ limits: { fileSize: 10 * 1024 * 1024 }, abortOnLimit: true }));
+app.use(
+  fileUpload({
+    limits: { fileSize: 10 * 1024 * 1024 },
+    abortOnLimit: true,
+    responseOnLimit: 'File size limit exceeded (10MB)',
+  })
+);
 
 // ─── HTTP request logger ──────────────────────────────────────────────────
 if (!cfg.isProd) {
