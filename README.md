@@ -34,9 +34,11 @@ Este proyecto implementa un sistema de **distribución de contenido privado** do
 
 ---
 
-## Arquitecturas
+## Arquitectura Private CDN
 
 ![Diagrama de arquitectura AWS](/infrastructure//01-private-cdn//infrastructure-private-cdn.png)
+
+## Arquitectura Container backend
 
 ![Diagrama de arquitectura AWS](/infrastructure//03-container-backend/architecture-container-backend.png)
 
