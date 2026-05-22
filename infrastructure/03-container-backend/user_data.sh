@@ -36,7 +36,8 @@ http {
     sendfile            on;
     tcp_nopush          on;
     keepalive_timeout   65;
-    types_hash_max_size 4096;
+    types_hash_max_size        4096;
+    server_names_hash_bucket_size 128;
 
     include /etc/nginx/mime.types;
     default_type application/octet-stream;
@@ -105,7 +106,7 @@ set -euo pipefail
 
 SUBDOMAIN="$${1:?Uso: ./add-api.sh <subdominio> <puerto> [email]}"
 PORT="$${2:?Uso: ./add-api.sh <subdominio> <puerto> [email]}"
-EMAIL="${3:-desarrollo@bartik-ing.com}"
+EMAIL="${3:-alfredojosedominguezhernandez@gmail.com}"
 CONF="/etc/nginx/conf.d/$SUBDOMAIN.conf"
 
 if [ -f "$CONF" ]; then
